@@ -1,0 +1,79 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 5
+      arrivalRate: 5
+      name: "Warm up - create accounts"
+    - duration: 30
+      arrivalRate: 50
+      rampTo: 200
+      name: "Concurrent deposits"
+    - duration: 30
+      arrivalRate: 100
+      rampTo: 300
+      name: "Concurrent withdrawals"
+    - duration: 30
+      arrivalRate: 100
+      rampTo: 300
+      name: "Concurrent transfers"
+  ensure:
+    p95: 2000
+    maxErrorRate: 50
+
+scenarios:
+  - name: "Create accounts"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/accounts"
+          json:
+            accountId: "ART_{{ $randomNumber(1,10) }}"
+            holderName: "Artillery User {{ $randomNumber(1,100) }}"
+            balance: 10000
+          capture:
+            json: "$.success"
+            as: "created"
+      - think: 0.1
+
+  - name: "Deposit transactions"
+    weight: 40
+    flow:
+      - post:
+          url: "/api/transactions"
+          json:
+            type: "deposit"
+            toAccount: "ART_{{ $randomNumber(1,10) }}"
+            amount: "{{ $randomNumber(1,100) }}"
+          capture:
+            json: "$.success"
+            as: "success"
+      - think: 0.05
+
+  - name: "Withdraw transactions"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/transactions"
+          json:
+            type: "withdraw"
+            fromAccount: "ART_{{ $randomNumber(1,10) }}"
+            amount: "{{ $randomNumber(100,500) }}"
+          capture:
+            json: "$.success"
+            as: "success"
+      - think: 0.05
+
+  - name: "Transfer transactions"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/transactions"
+          json:
+            type: "transfer"
+            fromAccount: "ART_{{ $randomNumber(1,10) }}"
+            toAccount: "ART_{{ $randomNumber(1,10) }}"
+            amount: "{{ $randomNumber(10,200) }}"
+          capture:
+            json: "$.success"
+            as: "success"
+      - think: 0.05

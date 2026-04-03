@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+set -e
+
+echo "Running pre-push checks..."
+echo ""
+
+echo "1. Linting backend..."
+cd backend && npm run lint && cd ..
+
+echo ""
+echo "2. Linting frontend..."
+cd frontend && npm run lint && cd ..
+
+echo ""
+echo "3. Building frontend..."
+cd frontend && npm run build && cd ..
+
+echo ""
+echo "4. Running Playwright tests..."
+npx playwright test
+
+echo ""
+echo "All checks passed! Ready to push."
