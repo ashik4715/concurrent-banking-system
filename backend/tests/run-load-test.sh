@@ -5,7 +5,7 @@
 
 set -e
 
-BASE_URL="${BASE_URL:-http://localhost:5000}"
+BASE_URL="${BASE_URL:-http://localhost:5050}"
 TEST_TYPE="${1:-k6}"
 
 echo "============================================"
